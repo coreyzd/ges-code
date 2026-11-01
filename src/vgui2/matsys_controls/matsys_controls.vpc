@@ -8,6 +8,15 @@ $macro SRCDIR		"..\.."
 
 $include "$SRCDIR\vpc_scripts\source_lib_base.vpc"
 
+$Configuration
+{
+	$Compiler
+	{
+		// GE:S changes vgui_controls class layouts under GE_DLL; anything built on them must match
+		$PreprocessorDefinitions		"$BASE;GE_DLL" [$GES]
+	}
+}
+
 $Project "matsys_controls"
 {
 	$Folder	"Source Files"

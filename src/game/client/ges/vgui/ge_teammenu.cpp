@@ -310,7 +310,7 @@ void CGETeamMenu::CreateServerOptText( void )
 	// Clear our variables first
 	m_pServerOptList->RemoveAll();
 
-	char timelimit[6];
+	char timelimit[16] = "--:--";
 	GetMapTimeLeft(timelimit);
 
 	bool radar = ge_allowradar.GetBool();
@@ -376,6 +376,7 @@ void CGETeamMenu::ServerOptAdder( const char* name, void *value, int type )
 	}
 
 	int itemID = m_pServerOptList->AddItem( 0, data );
+	data->deleteThis(); // AddItem keeps its own copy
 
 	m_pServerOptList->SetItemFgColor( itemID, pScheme->GetColor( color, Color(0,0,0,255) ) );
 }
