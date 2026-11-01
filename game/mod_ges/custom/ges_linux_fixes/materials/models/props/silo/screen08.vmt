@@ -3,16 +3,12 @@
 {
 	"$basetexture" "Goldeneye/Monitors/screen08a"
 	"$surfaceprop" "glass"
-	"$detail" "Goldeneye/Monitors/screen08b"
-	"$detailscale" "1"
-	"$detailblendmode" "1"
-	"$detailblendfactor" "1"
 	"Proxies"
 	{
 		"TextureScroll"
 		{
-			"texturescrollvar" "$detailtexturetransform"
-			"texturescrollrate" 0.2
+			"texturescrollvar" "$basetexturetransform"
+			"texturescrollrate" 0.03
 			"texturescrollangle" 90
 		}
 	}

@@ -493,8 +493,8 @@ CON_COMMAND(teamselect, "Brings up the team menu.")
 }
 
 //-----------------------------------------------------------------------------
-// The frame's close button sits in the frame's top-right corner, which is the
-// transparent band above the folder artwork; tuck it into the paper's corner.
+// GE:S's team menu has no close button. Frame::ApplySettings turns it back on
+// whenever the .res is (re)applied, so keep it hidden here.
 //-----------------------------------------------------------------------------
 void CGETeamMenu::PerformLayout()
 {
@@ -502,9 +502,5 @@ void CGETeamMenu::PerformLayout()
 
 	vgui::Panel *pClose = FindChildByName( "frame_close" );
 	if ( pClose && pClose->IsVisible() )
-	{
-		int inset = scheme()->GetProportionalScaledValueEx( GetScheme(), 22 );
-		int top = scheme()->GetProportionalScaledValueEx( GetScheme(), 52 );
-		pClose->SetPos( GetWide() - pClose->GetWide() - inset, top );
-	}
+		SetCloseButtonVisible( false );
 }
