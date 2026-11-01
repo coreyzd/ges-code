@@ -542,7 +542,7 @@ template <class T>
 T GERandom(const T limit = T(1.0))
 {
    static bool seeded = false;
-   static const double rand_max_reciprocal = double(1.0) / (double(RAND_MAX) + 1.0);
+   static const double rand_max_reciprocal = double(1.0) / 32768.0; // rand() may be libc (31-bit) or Valve's (15-bit); use the low 15 bits
 
 #ifdef GAME_DLL
 
@@ -558,7 +558,7 @@ T GERandom(const T limit = T(1.0))
 		   return T(returnValue);
 	   }
 	   else
-		   return T(double(limit) * double(rand()) * rand_max_reciprocal);
+		   return T(double(limit) * double(rand() & 0x7fff) * rand_max_reciprocal);
    }
 
    if (iAlertCode & 2)
@@ -581,7 +581,7 @@ T GERandom(const T limit = T(1.0))
 #else
 
    if (seeded)
-	   return T(double(limit) * double(rand()) * rand_max_reciprocal);
+	   return T(double(limit) * double(rand() & 0x7fff) * rand_max_reciprocal);
 
    tm myTime;
    VCRHook_LocalTime( &myTime );

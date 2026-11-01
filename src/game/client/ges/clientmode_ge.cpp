@@ -294,9 +294,13 @@ const GameplayTip *ClientModeGENormal::GetRandomTip( void )
 	if ( m_vGameplayTips.Count() > 1 )
 	{
 		int tip_num;
+		int tries = 0;
 		do {
 			tip_num = GERandom<int>( m_vGameplayTips.Count() );
-		} while ( tip_num == m_iLastTip );
+		} while ( tip_num == m_iLastTip && ++tries < 16 );
+
+		if ( tip_num == m_iLastTip )
+			tip_num = ( m_iLastTip + 1 ) % m_vGameplayTips.Count();
 
 		m_iLastTip = tip_num;
 		return m_vGameplayTips[tip_num];

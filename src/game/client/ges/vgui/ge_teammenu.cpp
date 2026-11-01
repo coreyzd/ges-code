@@ -503,8 +503,8 @@ void CGETeamMenu::PerformLayout()
 	vgui::Panel *pClose = FindChildByName( "frame_close" );
 	if ( pClose && pClose->IsVisible() )
 	{
-		int inset = scheme()->GetProportionalScaledValueEx( GetScheme(), 10 );
-		int top = scheme()->GetProportionalScaledValueEx( GetScheme(), 46 );
+		int inset = scheme()->GetProportionalScaledValueEx( GetScheme(), 22 );
+		int top = scheme()->GetProportionalScaledValueEx( GetScheme(), 52 );
 		pClose->SetPos( GetWide() - pClose->GetWide() - inset, top );
 	}
 }
