@@ -35,6 +35,13 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#ifdef GE_DLL
+// GE:S frames (team menu etc.) are proportional but use fixed-size symbol fonts for the
+// caption buttons; keep the pre-2025 unscaled caption/button layout so they line up.
+#undef QuickPropScale
+#define QuickPropScale( x ) ( x )
+#endif
+
 using namespace vgui;
 
 static const int DEFAULT_SNAP_RANGE = 10; // number of pixels distance before the frame will snap to an edge

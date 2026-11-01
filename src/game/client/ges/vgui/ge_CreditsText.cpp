@@ -223,6 +223,13 @@ void GECreditsText::Paint()
 
 	if (!m_TextStream.Count())
 		return;
+
+	// Line break tables out of sync (base class recalculated without us) -> rebuild them
+	if ( m_bRecalcLineBreaks || m_LineBreaksHeight.Count() < m_LineBreaks.Count() || m_LineBreaksLength.Count() < m_LineBreaks.Count() )
+		RecalculateLineBreaks();
+	if ( m_LineBreaksHeight.Count() < m_LineBreaks.Count() || !m_LineBreaks.Count() )
+		return;
+
 	int lineBreakIndexIndex = 0;
 	int startIndex = GetStartDrawIndex(lineBreakIndexIndex);
 	_currentTextClickable = false;

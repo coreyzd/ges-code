@@ -203,8 +203,15 @@ private:
 	MESSAGE_FUNC_INT( MoveScrollBarDirect, "MoveScrollBarDirect", delta );
 
 	// linebreak stream functions
+#ifdef GE_DLL
+	// GECreditsText keeps per-line height/length tables alongside m_LineBreaks, so the
+	// base class must dispatch to its versions (otherwise those tables stay empty).
+	virtual void InvalidateLineBreakStream();
+	virtual void RecalculateLineBreaks();
+#else
 	void InvalidateLineBreakStream();
 	void RecalculateLineBreaks();
+#endif
 
 	struct TFade
 	{
