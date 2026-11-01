@@ -1,0 +1,19 @@
+// Linux/SDK2013 fallback: the original uses the Windows-only Shader Editor ("editor_shader").
+"UnlitGeneric"
+{
+	"$basetexture" "Goldeneye/Monitors/earth"
+	"$surfaceprop" "glass"
+	"$detail" "Goldeneye/Monitors/screen01"
+	"$detailscale" "1"
+	"$detailblendmode" "1"
+	"$detailblendfactor" "1"
+	"Proxies"
+	{
+		"TextureScroll"
+		{
+			"texturescrollvar" "$detailtexturetransform"
+			"texturescrollrate" 0.1
+			"texturescrollangle" 0
+		}
+	}
+}

@@ -408,7 +408,7 @@ void CLagCompensationManager::FrameUpdatePostEntityThink()
 		Assert( track->Count() < 1000 ); // insanity check
  
 		// remove tail records that are too old
-		int tailIndex = track->Tail();
+		intp tailIndex = track->Tail();
 		while ( track->IsValidIndex( tailIndex ) )
 		{
 			LagRecordNPC &tail = track->Element( tailIndex );
@@ -967,7 +967,7 @@ void CLagCompensationManager::BacktrackEntity( CAI_BaseNPC *pEntity, float flTar
 	if ( track->Count() <= 0 )
 		return;
  
-	int curr = track->Head();
+	intp curr = track->Head();
  
 	LagRecordNPC *prevRecord = NULL;
 	LagRecordNPC *record = NULL;

@@ -74,6 +74,12 @@ void SectionedListPanelHeader::ApplySchemeSettings(IScheme *pScheme)
 	{
 		SetFont( hFont );
 	}
+#ifdef GE_DLL
+	else if ( GetFont() != INVALID_FONT )
+	{
+		// keep a font set explicitly through SetHeaderFont( sectionID, font )
+	}
+#endif
 	else
 	{
 		SetFont(pScheme->GetFont("DefaultVerySmall", IsProportional()));
@@ -500,6 +506,11 @@ public:
 
 
 		HFont hFont = m_pListPanel->GetRowFont();
+#ifdef GE_DLL
+		// rows use their section's font when one was given via SetSectionFont()
+		if ( m_pListPanel->m_Sections.IsValidIndex( m_iSectionID ) && m_pListPanel->m_Sections[m_iSectionID].m_hFont != INVALID_FONT )
+			hFont = m_pListPanel->m_Sections[m_iSectionID].m_hFont;
+#endif
 		if ( hFont != INVALID_FONT )
 		{
 			SetFont( hFont );

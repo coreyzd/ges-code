@@ -35,12 +35,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#ifdef GE_DLL
-// GE:S frames (team menu etc.) are proportional but use fixed-size symbol fonts for the
-// caption buttons; keep the pre-2025 unscaled caption/button layout so they line up.
-#undef QuickPropScale
-#define QuickPropScale( x ) ( x )
-#endif
 
 using namespace vgui;
 
