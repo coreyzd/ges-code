@@ -200,6 +200,12 @@ private:
 
 #if defined( CLIENT_DLL )
 	int						m_nOldAnimationParity;
+#ifdef GE_DLL
+	// GE:S death blood (view model slot 1) is animated client-side from its own clock
+	int						m_nGEBloodParity = -1;
+	int						m_nGEBloodSequence = -1;
+	float					m_flGEBloodStart = 0.0f;
+#endif
 #endif
 
 

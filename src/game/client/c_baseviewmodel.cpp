@@ -321,6 +321,27 @@ int C_BaseViewModel::DrawModel( int flags )
 	if ( !m_bReadyToDraw )
 		return 0;
 
+#ifdef GE_DLL
+	// The death blood overlay (view model 1, models/VGUI/bloodanimation.mdl) has no weapon and is
+	// driven only by the server picking a sequence. On the new engine its predicted animation clock
+	// doesn't advance while the player is dead, so it froze on its first frame (a sliver of blood at
+	// the top of the screen). Run its cycle from the client clock instead.
+	if ( ViewModelIndex() == 1 && !GetWeapon() && GetModelPtr() )
+	{
+		if ( m_nGEBloodParity != m_nAnimationParity || m_nGEBloodSequence != GetSequence() )
+		{
+			m_nGEBloodParity = m_nAnimationParity;
+			m_nGEBloodSequence = GetSequence();
+			m_flGEBloodStart = gpGlobals->curtime;
+		}
+
+		float cycle = ( gpGlobals->curtime - m_flGEBloodStart ) * GetSequenceCycleRate( GetModelPtr(), GetSequence() ) * GetPlaybackRate();
+		if ( cycle >= 1.0f )
+			cycle = IsSequenceLooping( GetSequence() ) ? fmodf( cycle, 1.0f ) : 0.999f;
+		SetCycle( MAX( cycle, 0.0f ) );
+	}
+#endif
+
 	if ( flags & STUDIO_RENDER )
 	{
 		// Determine blending amount and tell engine
