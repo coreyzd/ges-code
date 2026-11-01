@@ -60,6 +60,7 @@ protected:
 	// VGUI2 overrides
 	virtual void OnKeyCodePressed(vgui::KeyCode code);
 	virtual void OnCommand( const char *command );
+	virtual void PerformLayout();
 
 	virtual void FireGameEvent( IGameEvent *pEvent );
 

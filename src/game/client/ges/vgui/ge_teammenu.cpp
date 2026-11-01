@@ -491,3 +491,20 @@ CON_COMMAND(teamselect, "Brings up the team menu.")
 {
 	gViewPortInterface->ShowPanel( PANEL_TEAM, true );
 }
+
+//-----------------------------------------------------------------------------
+// The frame's close button sits in the frame's top-right corner, which is the
+// transparent band above the folder artwork; tuck it into the paper's corner.
+//-----------------------------------------------------------------------------
+void CGETeamMenu::PerformLayout()
+{
+	BaseClass::PerformLayout();
+
+	vgui::Panel *pClose = FindChildByName( "frame_close" );
+	if ( pClose && pClose->IsVisible() )
+	{
+		int inset = scheme()->GetProportionalScaledValueEx( GetScheme(), 10 );
+		int top = scheme()->GetProportionalScaledValueEx( GetScheme(), 46 );
+		pClose->SetPos( GetWide() - pClose->GetWide() - inset, top );
+	}
+}

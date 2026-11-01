@@ -291,6 +291,10 @@ public:
 			InvalidateLayout();
 		}
 		m_iSectionID = sectionID;
+#ifdef GE_DLL
+		if ( m_pListPanel->m_Sections.IsValidIndex( m_iSectionID ) && m_pListPanel->m_Sections[m_iSectionID].m_hFont != INVALID_FONT )
+			SetFont( m_pListPanel->m_Sections[m_iSectionID].m_hFont );
+#endif
 	}
 
 	void SetData(const KeyValues *data)
