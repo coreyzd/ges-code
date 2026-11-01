@@ -14,6 +14,14 @@ $Configuration
 {
 	$Compiler
 	{
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\thirdparty\miniaudio"
+	}
+}
+
+$Configuration
+{
+	$Compiler
+	{
 		$AdditionalIncludeDirectories		"$BASE;.\ges;.\ges\hud;.\ges\vgui;$SRCDIR\game\shared\ges;$SRCDIR\game\shared\Multiplayer;hl2mp\ui,.\hl2mp,$SRCDIR\game\shared\hl2mp,.\hl2,.\hl2\elements,$SRCDIR\game\shared\hl2"
 		$PreprocessorDefinitions			"$BASE;HL2MP;HL2_CLIENT_DLL;NEXT_BOT;SOURCE_2013"
 	}
@@ -177,6 +185,20 @@ $Project "Client (GES)"
 			$File	"$SRCDIR\game\shared\hl2mp\hl2mp_playeranimstate.h"
 			$File	"$SRCDIR\game\shared\Multiplayer\multiplayer_animstate.cpp"
 			$File	"$SRCDIR\game\shared\Multiplayer\multiplayer_animstate.h"
+		}
+		$Folder	"GES Music (miniaudio)"
+		{
+			$File	"ges\fmod_compat\ge_fmod_compat.h"
+			$File	"ges\fmod_compat\ge_fmod_compat.cpp"
+			{
+				$Configuration
+				{
+					$Compiler
+					{
+						$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+					}
+				}
+			}
 		}
 		-$File	"$SRCDIR\game\shared\weapon_parse_default.cpp"
 

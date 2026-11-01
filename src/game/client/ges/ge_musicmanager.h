@@ -18,6 +18,9 @@
 
 #ifdef _WIN32
 #include "fmod/fmod.hpp"
+#else
+// FMOD isn't shipped for Linux; a small miniaudio-backed shim provides the API we use
+#include "fmod_compat/ge_fmod_compat.h"
 #endif
 
 #define GE_MUSIC_MENU		"_menu"
@@ -58,7 +61,7 @@ protected:
 	void FadeThink();
 	void PauseThink();
 	void NextSong();
-#ifdef _WIN32
+#if 1
 	void EndSong( FMOD::Channel *pChannel );
 #endif
 
@@ -120,7 +123,7 @@ private:
 	// Current song length in milliseconds
 	unsigned int m_iCurrSongLength;
 
-#ifdef _WIN32
+#if 1
 	// FMOD Variables
 	FMOD::System		*m_pSystem;
 	FMOD::Channel		*m_pLastSong;

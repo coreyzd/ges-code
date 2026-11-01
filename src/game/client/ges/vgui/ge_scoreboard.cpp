@@ -635,7 +635,7 @@ void CGEScoreBoard::ApplySchemeSettings( vgui::IScheme *pScheme )
 
 	int size = scheme()->GetProportionalScaledValue( GES_DEADICON_WIDTH );
 
-	m_pImageList = new vgui::ImageList(true);
+	m_pImageList = new vgui::ImageList(false); // images are owned by the scheme manager
 	m_pImageList->AddImage( scheme()->GetImage( "scoreboard/player_dead", true ) );
 	m_pImageList->AddImage( scheme()->GetImage( "scoreboard/ges_dev", true ) );
 	m_pImageList->AddImage( scheme()->GetImage( "scoreboard/ges_bt", true ) );

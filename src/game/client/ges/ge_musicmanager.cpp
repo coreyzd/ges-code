@@ -26,7 +26,10 @@
 #define FMOD_TRANSITION_TIME	1.5f
 #define CurrTime()  Plat_FloatTime()
 
-#ifdef _WIN32
+// Music is played through FMOD on Windows and through a miniaudio-backed FMOD shim elsewhere
+#define GE_MUSIC_ENABLED 1
+
+#ifdef GE_MUSIC_ENABLED
 using namespace FMOD;
 #define FMOD_CALL(call) { FMOD_RESULT r = call; if ( r != FMOD_OK ) { DevMsg( "[FMOD] Error Code %i\n", r ); } }
 #endif
@@ -51,7 +54,7 @@ void StartGEMusicManager()
 
 	g_pGEMusicManager = new CGEMusicManager();
 	
-#ifdef _WIN32
+#ifdef GE_MUSIC_ENABLED
 	g_pGEMusicManager->Start();
 #endif
 }
@@ -60,7 +63,7 @@ void StopGEMusicManager()
 {
 	if (g_pGEMusicManager != NULL)
 	{
-#ifdef _WIN32
+#ifdef GE_MUSIC_ENABLED
 	    if (g_pGEMusicManager->IsAlive())
 	    {
 	        g_pGEMusicManager->StopThread();
@@ -108,7 +111,7 @@ CGEMusicManager::CGEMusicManager() : CAutoGameSystem( "GEMusicManager" )
 	m_fFadeInPercent = 0;
 	m_fFadeOutPercent = 0;
 
-#ifdef _WIN32
+#ifdef GE_MUSIC_ENABLED
 	m_pLastSong = NULL;
 	m_pCurrSong = NULL;
 
@@ -207,7 +210,7 @@ int CGEMusicManager::Run()
 {
 	m_bRun = true;
 
-#ifdef _WIN32
+#ifdef GE_MUSIC_ENABLED
 	// Crate FMOD system
 	FMOD_RESULT result = FMOD::System_Create( &m_pSystem );
 
@@ -386,7 +389,7 @@ void CGEMusicManager::InternalLoadSoundscape()
 
 void CGEMusicManager::NextSong( void ) 
 {
-#ifdef _WIN32
+#ifdef GE_MUSIC_ENABLED
 	// Make sure we are not NULL...
 	EnforcePlaylist();
 	if ( !m_CurrPlaylist )
@@ -460,7 +463,20 @@ void CGEMusicManager::CheckWindowFocus( void )
 	static bool sbInFocus = true;
 
 	// If we are on windows (why wouldn't we be?) check if we are the active window
-#ifdef _WIN32
+#ifndef _WIN32
+	// Mute when the game window loses focus
+	if ( m_pMasterChannel )
+	{
+		bool bActive = engine->IsActiveApp();
+		if ( bActive && !sbInFocus ) {
+			m_pMasterChannel->setMute( false );
+			sbInFocus = true;
+		} else if ( !bActive && sbInFocus ) {
+			m_pMasterChannel->setMute( true );
+			sbInFocus = false;
+		}
+	}
+#else
 	if ( m_pMasterChannel )
 	{
 		HWND active = GetForegroundWindow();
@@ -477,7 +493,7 @@ void CGEMusicManager::CheckWindowFocus( void )
 
 void CGEMusicManager::StartFade( int type )
 {
-#ifdef _WIN32
+#ifdef GE_MUSIC_ENABLED
 	if ( m_iFadeMode != FADE_NONE && m_iFadeMode != type )
 	{
 		// Changed in-progress fade, swap status
@@ -498,7 +514,7 @@ void CGEMusicManager::StartFade( int type )
 
 void CGEMusicManager::FadeThink( void )
 {
-#ifdef _WIN32
+#ifdef GE_MUSIC_ENABLED
 	// Sanity Check
 	if ( m_fLastFadeTime < m_fFadeStartTime )
 		return;
@@ -508,8 +524,8 @@ void CGEMusicManager::FadeThink( void )
 	m_fLastFadeTime = now;
 
 	// Linear fade
-	m_fFadeInPercent  = min( m_fFadeInPercent + fade_delta, 1.0f );
-	m_fFadeOutPercent = max( m_fFadeOutPercent - fade_delta, 0 );
+	m_fFadeInPercent  = MIN( m_fFadeInPercent + fade_delta, 1.0f );
+	m_fFadeOutPercent = MAX( m_fFadeOutPercent - fade_delta, 0.0f );
 
 	// Fail-safe
 	if ( now > m_fFadeStartTime + FMOD_TRANSITION_TIME )
@@ -556,7 +572,7 @@ void CGEMusicManager::FadeThink( void )
 
 void CGEMusicManager::PauseThink()
 {
-#ifdef _WIN32
+#ifdef GE_MUSIC_ENABLED
 	if ( !m_pCurrSong )
 		return;
 
@@ -583,7 +599,7 @@ void CGEMusicManager::PauseThink()
 #endif // _WIN32
 }
 
-#ifdef _WIN32
+#ifdef GE_MUSIC_ENABLED
 void CGEMusicManager::EndSong( FMOD::Channel *pChannel )
 {
 	if ( !pChannel )

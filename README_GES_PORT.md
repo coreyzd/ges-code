@@ -54,7 +54,9 @@ The engine's `hl2.sh` picks `bin/linux64/server.so` automatically and starts `hl
 * Python: embedded CPython **3.4.10** (static), matching the 3.4 stdlib that ships in
   `gesource/python/lib`; Boost.Python 1.83 replaces the old bundled copy.
 * `ge_webrequest`: on Linux, libcurl is loaded at runtime (`dlopen`) instead of statically linked.
-* FMOD music remains Windows-only (as in 5.0); Shader Editor is Windows-only and not built.
+* Music: Windows keeps FMOD; on Linux `ges/fmod_compat` implements the FMOD subset the music manager
+  uses on top of [miniaudio](https://github.com/mackron/miniaudio) (vendored in `src/thirdparty/miniaudio`).
+  Shader Editor is Windows-only and not built.
 
 ## Known gaps / next steps
 
