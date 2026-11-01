@@ -1,0 +1,28 @@
+//-----------------------------------------------------------------------------
+//	GES_BASE.VPC
+//
+//  Base VPC file for GoldenEye: Source game projects (client & server).
+//-----------------------------------------------------------------------------
+
+$MacroRequired		"SRCDIR"
+
+$Macro LIBGES		"$SRCDIR\lib\ges\$PLATSUBDIR"
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\ges;$SRCDIR\game\shared\hl2;$SRCDIR\game\shared\hl2mp"
+
+		// GE:S uses GE_DLL and HL2MP for all projects
+		$PreprocessorDefinitions		"$BASE;GE_DLL;GE_USE_ROLLINGEXP;HL2MP;SUPPRESS_INVALID_PARAMETER_NO_INFO"
+		$PreprocessorDefinitions		"$BASE;CURL_STATICLIB" [$WINDOWS]
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\thirdparty\curl" [$WINDOWS]
+	}
+
+	$Linker
+	{
+		// Needed for cURL library
+		$AdditionalDependencies			"$BASE wsock32.lib Ws2_32.lib" [$WINDOWS]
+	}
+}

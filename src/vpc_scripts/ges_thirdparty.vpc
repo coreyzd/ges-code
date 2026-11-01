@@ -1,0 +1,17 @@
+//-----------------------------------------------------------------------------
+//	GES_THIRDPARTY.VPC
+//
+//  Embedded Python 3.4 + Boost.Python, used by the GE:S server (gameplay/AI scripts).
+//  Linux libs are prebuilt in lib/ges/linux64 (see thirdparty/build_python_linux64.sh).
+//-----------------------------------------------------------------------------
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\thirdparty\boost;$SRCDIR\thirdparty\python3\Include"
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\thirdparty\python3\linux64" [$LINUXALL]
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\thirdparty\python3\PC" [$WINDOWS]
+		$PreprocessorDefinitions		"$BASE;BOOST_AUTO_LINK_NOMANGLE;BOOST_PYTHON_STATIC_LIB;BOOST_PYTHON_NO_PY_SIGNATURES;BOOST_SERIALIZATION_NO_LIB;BOOST_PYTHON_MAX_ARITY=20;BOOST_BIND_GLOBAL_PLACEHOLDERS"
+	}
+}

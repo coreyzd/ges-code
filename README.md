@@ -1,66 +1,71 @@
-# GoldenEye: Source
-## About
-A total conversion modification of Half-Life 2. We are a fan made artistic 
-recreation, released for free, with a primary goal in mind;  To bring the 
-memories and experiences from the original GoldenEye-64 back to life using 
-the Source SDK 2013 Technology. As one of the premier and consistently released 
-HL2 mods, GES has been seen out and about, reviewed by the best, and played by 
-hundreds and thousands of PC gamers for Eight long years and running.
+# Source SDK 2013
 
-Visit our [website](http://www.geshl2.com) and [forums](http://forums.geshl2.com)!
+Source code for Source SDK 2013.
 
-## Current State
-The last major public release of GES was v5.0 on August 12, 2016 using the 2007 Source SDK. 
+Contains the game code for Half-Life 2, HL2: DM and TF2.
 
-## Navigating the Code
-The main code base for GES is located in the following directories:
+**Now including Team Fortress 2! ✨**
 
-- /game/client/ges
-- /game/server/ges
-- /game/shared/ges
+## Build instructions
 
-TODO: Write more specific code navigation readme
+Clone the repository using the following command:
 
-## How to build
-### Prerequisites
-You must have the Boost libraries (v1.49  or higher) installed on your system path such that CMAKE can find them.
-You can download Boost [here](https://sourceforge.net/projects/boost/files/boost/) or through your distro's package manager.
+`git clone https://github.com/ValveSoftware/source-sdk-2013`
 
-You must also have CMAKE v2.8.12 or higher installed on your system, available [here](https://cmake.org/download/) or through
-your distro's package manager.
+### Windows
 
-### Linux Build Process
-1. Checkout the repository using git
-2. Open a terminal window in the root of the repository you just checked out
-3. Initialize the submodules: ```git submodule init --recursive```
-4. Build with CMake: ```mkdir build && cd build```
-5. ```cmake -DCMAKE_INSTALL_PREFIX=[path_to_gesource] ..```
-6. ```make install```
+Requirements:
+ - Source SDK 2013 Multiplayer installed via Steam
+ - Visual Studio 2022 with the following workload and components:
+   - Desktop development with C++:
+     - MSVC v143 - VS 2022 C++ x64/x86 build tools (Latest)
+     - Windows 11 SDK (10.0.22621.0) or Windows 10 SDK (10.0.19041.1)
+ - Python 3.13 or later
 
-### Windows Build Process
-1. Checkout the repository using git and initialize the submodules (recommend TortoiseGit)
-2. Create a build directory in the repository's root
-3. Open CMAKE GUI and configure the project for the visual studio version you are using (prefer 2015)
-4. Open Visual Studio using the generated solution files
-5. Build and install as usual
+Inside the cloned directory, navigate to `src`, run:
+```bat
+createallprojects.bat
+```
+This will generate the Visual Studio project `everything.sln` which will be used to build your mod.
 
-## Third-Party Libraries
-GES relies on several third-party libraries during compilation. We have an integrated
-Python 3.4 interpreter to run our Gameplay Scenarios and AI. To drive all this, we use
-the Boost Python library. To play our music, we utilize FMOD since Valve's internal
-sound functions do not operate across level transitions.
+Then, on the menu bar, go to `Build > Build Solution`, and wait for everything to build.
 
-## Contributing
-We will accept pull requests and bug reports from anyone. All we ask at this state
-is to limit your requests to bug fixes and compilation fixes. New capability and major
-code revisions will not be accepted until further notice.
+You can then select the `Client (Mod Name)` project you wish to run, right click and select `Set as Startup Project` and hit the big green `> Local Windows Debugger` button on the tool bar in order to launch your mod.
 
-## Code License
-GoldenEye: Source original code (files starting with 'ge_') is licensed under the
-GNU GPL v3. The full license text can be found in LICENSE_GES.
+The default launch options should be already filled in for the `Release` configuration.
 
-It's important to know that this code is supplied WITH ABSOLUTELY NO WARRANTY WHATSOEVER.
-We are not responsible for any damages resulting from the use of this code. Please see the
-license for more information.
+### Linux
 
-TODO: Replace file headers to comply with GNU GPL v3
+Requirements:
+ - Source SDK 2013 Multiplayer installed via Steam
+ - podman
+
+Inside the cloned directory, navigate to `src`, run:
+```bash
+./buildallprojects
+```
+
+This will build all the projects related to the SDK and your mods automatically against the Steam Runtime.
+
+You can then, in the root of the cloned directory, you can navigate to `game` and run your mod by launching the build launcher for your mod project, eg:
+```bash
+./mod_tf
+```
+
+*Mods that are distributed on Steam MUST be built against the Steam Runtime, which the above steps will automatically do for you.*
+
+## Distributing your Mod
+
+There is guidance on distributing your mod both on and off Steam available at the following link:
+
+https://partner.steamgames.com/doc/sdk/uploading/distributing_source_engine
+
+## Additional Resources
+
+- [Valve Developer Wiki](https://developer.valvesoftware.com/wiki/Source_SDK_2013)
+
+## License
+
+The SDK is licensed to users on a non-commercial basis under the [SOURCE 1 SDK LICENSE](LICENSE), which is contained in the [LICENSE](LICENSE) file in the root of the repository.
+
+For more information, see [Distributing your Mod](#markdown-header-distributing-your-mod).

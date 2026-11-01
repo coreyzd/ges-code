@@ -1,0 +1,30 @@
+#!/bin/bash
+# Build GoldenEye: Source (client.so + server.so) for linux64 inside the Steam Runtime (sniper),
+# the same way Valve's ./buildallprojects does. Requires podman.
+#   ./buildges            release build
+#   ./buildges debug      debug build
+# Output: ../game/mod_ges/bin/linux64/{client,server}.so  -> copy into sourcemods/gesource/bin/linux64/
+
+set -euo pipefail
+
+script=$(readlink -f -- "$0")
+pushd "$(dirname -- "$script")" > /dev/null
+
+source sdk_container
+run_in_sniper "$@"
+
+export VPC_NINJA_BUILD_MODE="${1:-release}"
+if [[ "$VPC_NINJA_BUILD_MODE" != "release" && "$VPC_NINJA_BUILD_MODE" != "debug" ]]; then
+    echo "Usage: $0 [debug|release]"
+    exit 1
+fi
+
+solution_out="_vpc_/ninja/ges_$VPC_NINJA_BUILD_MODE"
+
+if [[ ! -e "$solution_out.ninja" ]]; then
+    devtools/bin/vpc /ges /linux64 /ninja /define:SOURCESDK +game /mksln "$solution_out"
+fi
+
+ninja -f "$solution_out.ninja" -j$(nproc)
+
+popd

@@ -1,0 +1,49 @@
+"GameInfo"
+{
+	game		"GoldenEye: Source (v5.0)"
+	title		""
+	title2		""
+
+	icon 		"resource/steamicon"
+
+	developer	"Team GoldenEye: Source"
+	developer_url	"http://www.geshl2.com"
+
+	manual		"http://wiki.geshl2.com"
+
+	nohimodel 1
+	nocrosshair 1
+	nomodels 1
+
+	type multiplayer_only
+
+	FileSystem
+	{
+		// Source SDK Base 2013 Multiplayer
+		SteamAppId				243750
+
+		SearchPaths
+		{
+			// User customizations (VPKs or folders dropped into custom/)
+			game+mod			|gameinfo_path|custom/*
+
+			// GoldenEye: Source loose files
+			mod+mod_write		|gameinfo_path|.
+			game+game_write		|gameinfo_path|.
+			default_write_path	|gameinfo_path|.
+			gamebin				|gameinfo_path|bin
+
+			// Half-Life 2 content from Source SDK Base 2013 Multiplayer
+			game				|appid_243750|hl2/hl2_textures.vpk
+			game				|appid_243750|hl2/hl2_sound_vo_english.vpk
+			game				|appid_243750|hl2/hl2_sound_misc.vpk
+			game				|appid_243750|hl2/hl2_misc.vpk
+			platform			|appid_243750|platform/platform_misc.vpk
+
+			game				|appid_243750|hl2
+			platform			|appid_243750|platform
+
+			game+download		|gameinfo_path|download
+		}
+	}
+}
