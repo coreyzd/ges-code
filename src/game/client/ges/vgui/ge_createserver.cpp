@@ -164,7 +164,7 @@ void CGECreateServer::OnCommand( const char *command )
 {
 	if ( !Q_stricmp(command, "play") )
 	{
-		CUtlVector<char*> commands;
+		CUtlVector<CUtlString> commands;
 
 		// Pull the values from our controls and apply them to commands and save off the choices
 		for ( KeyValues *kv = m_kvCmdMap->GetFirstTrueSubKey(); kv; kv = kv->GetNextTrueSubKey() )
@@ -199,6 +199,7 @@ void CGECreateServer::OnCommand( const char *command )
 
 					Q_snprintf( cmd, 128, "%s \"%s\"", kv->GetString("cmd"), cmd_value );
 					commands.AddToTail( cmd );
+					delete [] cmd;
 				}
 				else if ( !Q_stricmp(kv->GetString("type"), "TEXT") )
 				{
@@ -214,6 +215,7 @@ void CGECreateServer::OnCommand( const char *command )
 
 					Q_snprintf( cmd, 128, "%s \"%s\"", kv->GetString("cmd"), cmd_value );
 					commands.AddToTail( cmd );
+					delete [] cmd;
 				}
 				else if ( !Q_stricmp(kv->GetString("type"), "BOOL") )
 				{
@@ -228,6 +230,7 @@ void CGECreateServer::OnCommand( const char *command )
 					}
 				
 					commands.AddToTail( cmd );
+					delete [] cmd;
 				}
 				else
 				{
@@ -240,13 +243,13 @@ void CGECreateServer::OnCommand( const char *command )
 
 		// Apply the commands
 		for ( int i=0; i < commands.Count(); i++ )
-			engine->ClientCmd_Unrestricted( commands[i] );
+			engine->ClientCmd_Unrestricted( commands[i].Get() );
 		
 		// Save our last used settings to our custom file
 		m_kvCmdValues->SaveToFile( filesystem, COMMAND_MAP_VAL, "MOD" );
 
-		// Cleanup
-		commands.PurgeAndDeleteElements();
+		// Cleanup (strings are owned by the vector)
+		commands.Purge();
 	}
 
 	SetVisible( false );
