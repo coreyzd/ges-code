@@ -351,3 +351,73 @@ CBaseEntity* Create_GEExplosion( CBaseEntity* owner, const Vector pos, float dmg
 {
 	return Create_GEExplosion( owner, NULL, pos, dmg, dmgRadius );
 }
+
+#ifdef GE_USE_ROLLINGEXP
+//-----------------------------------------------------------------------------
+// env_explosion for GE:S: ExplosionCreate() (grenades, rockets, mines, explosive
+// props) spawns one of these, which hands off to the rolling ge_explosion.
+// (The 5.0 release had this; it was missing from the archived source.)
+//-----------------------------------------------------------------------------
+#include "explode.h"
+#include "world.h"
+
+LINK_ENTITY_TO_CLASS( env_explosion, CEnvExplosion );
+
+BEGIN_DATADESC( CEnvExplosion )
+	DEFINE_KEYFIELD( m_iMagnitude, FIELD_INTEGER, "iMagnitude" ),
+	DEFINE_KEYFIELD( m_iRadiusOverride, FIELD_INTEGER, "iRadiusOverride" ),
+	DEFINE_KEYFIELD( m_flDamageForce, FIELD_FLOAT, "DamageForce" ),
+	DEFINE_FIELD( m_hInflictor, FIELD_EHANDLE ),
+	DEFINE_FIELD( m_iCustomDamageType, FIELD_INTEGER ),
+	DEFINE_FIELD( m_iClassIgnore, FIELD_INTEGER ),
+	DEFINE_KEYFIELD( m_hEntityIgnore, FIELD_EHANDLE, "ignoredEntity" ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "Explode", InputExplode ),
+END_DATADESC()
+
+bool CEnvExplosion::KeyValue( const char *szKeyName, const char *szValue )
+{
+	if ( FStrEq( szKeyName, "fireballsprite" ) )
+		return true; // not used by the GE:S explosion
+	return BaseClass::KeyValue( szKeyName, szValue );
+}
+
+void CEnvExplosion::Spawn()
+{
+	SetSolid( SOLID_NONE );
+	AddEffects( EF_NODRAW );
+	SetMoveType( MOVETYPE_NONE );
+	m_iCustomDamageType = -1;
+}
+
+void CEnvExplosion::InputExplode( inputdata_t &inputdata )
+{
+	float flRadius = ( m_iRadiusOverride > 0 ) ? (float)m_iRadiusOverride : m_iMagnitude * 2.5f;
+	float flDamage = ( m_spawnflags & SF_ENVEXPLOSION_NODAMAGE ) ? 0.0f : (float)m_iMagnitude;
+
+	CBaseEntity *pOwner = GetOwnerEntity();
+	if ( !pOwner )
+		pOwner = GetWorldEntity();
+
+	CBaseEntity *pActivator = m_hInflictor.Get();
+	if ( !pActivator )
+		pActivator = inputdata.pActivator;
+
+	Create_GEExplosion( pOwner, pActivator, GetAbsOrigin(), flDamage, flRadius );
+
+	if ( !( m_spawnflags & SF_ENVEXPLOSION_REPEATABLE ) )
+		UTIL_Remove( this );
+}
+
+int CEnvExplosion::DrawDebugTextOverlays( void )
+{
+	int text_offset = BaseClass::DrawDebugTextOverlays();
+	if ( m_debugOverlays & OVERLAY_TEXT_BIT )
+	{
+		char tempstr[512];
+		Q_snprintf( tempstr, sizeof(tempstr), "    magnitude: %i", m_iMagnitude );
+		EntityText( text_offset, tempstr, 0 );
+		text_offset++;
+	}
+	return text_offset;
+}
+#endif // GE_USE_ROLLINGEXP

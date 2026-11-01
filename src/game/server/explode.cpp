@@ -392,6 +392,8 @@ void ExplosionCreate( const Vector &center, const QAngle &angles,
 	char			buf[128];
 
 	CEnvExplosion *pExplosion = (CEnvExplosion*)CBaseEntity::Create( "env_explosion", center, angles, pOwner );
+	if ( !pExplosion )
+		return;
 	Q_snprintf( buf,sizeof(buf), "%3d", magnitude );
 	char *szKeyName = "iMagnitude";
 	char *szValue = buf;
