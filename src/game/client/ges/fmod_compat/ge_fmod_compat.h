@@ -45,7 +45,7 @@ namespace FMOD
 		FMOD_RESULT release();
 
 		void *m_pSound;		// ma_sound*
-		char *m_pszPath;
+		char m_szPath[1024];
 		Channel *m_pChannel;
 	};
 

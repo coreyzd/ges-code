@@ -2,7 +2,9 @@
 //
 // miniaudio-backed implementation of the FMOD subset in ge_fmod_compat.h.
 // Compiled without the client precompiled header (miniaudio must not see
-// the engine's memory/string macros).
+// the engine's memory/string macros). Note: never free() memory that libc
+// allocated (strdup etc.) here -- the client overrides malloc/free with the
+// engine allocator, so mixing the two corrupts the heap.
 //
 //============================================================================//
 #ifndef _WIN32 // Windows uses the real FMOD
@@ -76,8 +78,10 @@ FMOD_RESULT System::createStream( const char *name, int, void *, Sound **ppSound
 	}
 
 	Sound *pSound = new Sound;
+	memset( pSound, 0, sizeof( *pSound ) );
 	pSound->m_pSound = pMaSound;
-	pSound->m_pszPath = strdup( name );
+	strncpy( pSound->m_szPath, name, sizeof( pSound->m_szPath ) - 1 );
+	pSound->m_szPath[sizeof( pSound->m_szPath ) - 1] = '\0';
 	pSound->m_pChannel = NULL;
 	*ppSound = pSound;
 	return FMOD_OK;
@@ -154,11 +158,11 @@ FMOD_RESULT Sound::getLength( unsigned int *length, int )
 	float flLen = 0;
 	ma_sound_get_length_in_seconds( (ma_sound *)m_pSound, &flLen );
 
-	if ( flLen <= 0 && m_pszPath )
+	if ( flLen <= 0 && m_szPath[0] )
 	{
 		// Some streamed MP3s don't report a length up front; scan the file once.
 		ma_decoder decoder;
-		if ( ma_decoder_init_file( m_pszPath, NULL, &decoder ) == MA_SUCCESS )
+		if ( ma_decoder_init_file( m_szPath, NULL, &decoder ) == MA_SUCCESS )
 		{
 			ma_uint64 frames = 0;
 			if ( ma_decoder_get_length_in_pcm_frames( &decoder, &frames ) == MA_SUCCESS && decoder.outputSampleRate )
@@ -179,7 +183,6 @@ FMOD_RESULT Sound::release()
 		ma_sound_uninit( (ma_sound *)m_pSound );
 		free( m_pSound );
 	}
-	free( m_pszPath );
 	if ( m_pChannel )
 		delete m_pChannel;
 	delete this;

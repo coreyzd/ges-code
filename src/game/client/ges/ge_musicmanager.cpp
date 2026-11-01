@@ -146,11 +146,61 @@ void CGEMusicManager::LevelInitPreEntity()
 void CGEMusicManager::LoadPlayList( const char *levelname )
 {
 	// Only load a new playlist if it is different than the current
-	if ( Q_stricmp(levelname, m_szPlayList) )
+	if ( !Q_stricmp(levelname, m_szPlayList) )
+		return;
+
+	// Parse the playlist here, on the calling (main) thread
+	CUtlVector<PendingSong_t> songs;
+	if ( levelname[0] )
 	{
-		Q_strncpy( m_szPlayList, levelname, sizeof(m_szPlayList) );
-		m_bLoadPlaylist = true;
+		// Try to load the level's music definition
+		char sz[128];
+		Q_snprintf( sz, sizeof(sz), "scripts/music/level_music_%s", levelname );
+
+		KeyValues *pKV = ReadEncryptedKVFile( filesystem, sz, NULL );
+		if ( !pKV )
+		{
+			// If we fail to load the level music, try the default mix
+			Q_snprintf( sz, sizeof(sz), "scripts/music/level_music_%s", GE_MUSIC_DEFAULT );
+			pKV = ReadEncryptedKVFile( filesystem, sz, NULL );
+		}
+
+		if ( pKV )
+		{
+			for ( KeyValues *pKey = pKV->GetFirstSubKey(); pKey; pKey = pKey->GetNextKey() )
+			{
+				if ( !Q_stricmp( pKey->GetName(), "file" ) && !pKey->GetFirstSubKey() )
+				{
+					// A bare "file" key means add it to the default list
+					int i = songs.AddToTail();
+					Q_strncpy( songs[i].scape, GE_MUSIC_DEFAULTSCAPE, sizeof(songs[i].scape) );
+					Q_strncpy( songs[i].file, pKey->GetString(), sizeof(songs[i].file) );
+				}
+				else if ( pKey->GetFirstSubKey() )
+				{
+					// We encountered a soundscape entry
+					for ( KeyValues *pFile = pKey->GetFirstSubKey(); pFile; pFile = pFile->GetNextKey() )
+					{
+						if ( Q_stricmp( pFile->GetName(), "file" ) )
+							continue;
+						int i = songs.AddToTail();
+						Q_strncpy( songs[i].scape, pKey->GetName(), sizeof(songs[i].scape) );
+						Q_strncpy( songs[i].file, pFile->GetString(), sizeof(songs[i].file) );
+					}
+				}
+			}
+
+			pKV->deleteThis();
+			DevMsg( 2, "[FMOD] Loaded playlist %s\n", sz );
+		}
 	}
+
+	m_Lock.Lock();
+	Q_strncpy( m_szPlayList, levelname, sizeof(m_szPlayList) );
+	m_PendingSongs.RemoveAll();
+	m_PendingSongs.AddVectorToTail( songs );
+	m_bLoadPlaylist = true;
+	m_Lock.Unlock();
 }
 
 void CGEMusicManager::ClearPlayList( void )
@@ -286,61 +336,22 @@ void CGEMusicManager::InternalLoadPlaylist( void )
 	if ( !m_bLoadPlaylist )
 		return;
 
+	m_Lock.Lock();
+
 	// Clear our playlist and stop playing music now
 	ClearPlayList();
 
-	// Only load a new list if we are given one
-	if ( m_szPlayList[0] )
-	{
-		// Try to load the level's music definition
-		char sz[128];
-		Q_snprintf( sz, sizeof(sz), "scripts/music/level_music_%s", m_szPlayList );
-
-		KeyValues *pKV = ReadEncryptedKVFile( filesystem, sz, NULL );
-		if ( !pKV )
-		{
-			// If we fail to load the level music, try the default mix
-			Q_snprintf( sz, sizeof(sz), "scripts/music/level_music_%s", GE_MUSIC_DEFAULT );
-			pKV = ReadEncryptedKVFile( filesystem, sz, NULL );
-		}
-
-		if ( pKV )
-		{
-			// If we fail the default, don't play anything...
-			m_Playlists.Insert( GE_MUSIC_DEFAULTSCAPE, new CUtlVector<char*>() );
-
-			// Start the file parse
-			KeyValues *pKey = pKV->GetFirstSubKey();
-			while( pKey )
-			{
-				if ( !Q_stricmp( pKey->GetName(), "file" ) && !pKey->GetFirstSubKey() )
-				{
-					// A bare "file" key means add it to the default list
-					AddSong( pKey->GetString(), GE_MUSIC_DEFAULTSCAPE );
-				}
-				else if ( pKey->GetFirstSubKey() )
-				{
-					// We encountered a soundscape entry
-					const char *soundscape = pKey->GetName();
-
-					KeyValues *pFile = pKey->GetFirstSubKey();
-					while ( pFile )
-					{
-						if ( !Q_stricmp( pFile->GetName(), "file" ) )
-							AddSong( pFile->GetString(), soundscape );
-						pFile = pFile->GetNextKey();
-					}
-				}
-
-				pKey = pKey->GetNextKey();
-			}
-
-			DevMsg( 2, "[FMOD] Loaded playlist %s\n", sz );
-		}
-	}
+	// Install the playlist parsed by LoadPlayList()
+	if ( m_PendingSongs.Count() )
+		m_Playlists.Insert( GE_MUSIC_DEFAULTSCAPE, new CUtlVector<char*>() );
+	for ( int i = 0; i < m_PendingSongs.Count(); i++ )
+		AddSong( m_PendingSongs[i].file, m_PendingSongs[i].scape );
+	m_PendingSongs.RemoveAll();
 
 	m_fNextSongTime = 0;
 	m_bLoadPlaylist = false;
+
+	m_Lock.Unlock();
 }
 
 void CGEMusicManager::EnforcePlaylist( bool force /*= false*/ )

@@ -128,6 +128,9 @@ CGEWebRequest *g_pVersionWebRequest = NULL;
 
 void OnVersionLoad( const char *result, const char *error )
 {
+	if ( !result )
+		return;
+
 	if ( !error || error[0] == '\0' )
 	{
 		KeyValues *kv = new KeyValues("update");
@@ -294,6 +297,15 @@ void CGERules::Think()
 		g_pStatusListWebRequest->Destroy();
 		g_pStatusListWebRequest = NULL;
 	}
+
+	// Handle the version check here rather than on the web request's thread:
+	// KeyValues and the filesystem are not safe to use off the main thread.
+	static bool s_bVersionChecked = false;
+	if ( !s_bVersionChecked && g_pVersionWebRequest && g_pVersionWebRequest->IsFinished() )
+	{
+		s_bVersionChecked = true;
+		OnVersionLoad( g_pVersionWebRequest->GetResult(), g_pVersionWebRequest->GetError() );
+	}
 }
 
 void CGERules::GetTaggedConVarList( KeyValues *pCvarTagList )
@@ -414,7 +426,7 @@ void CGERules::LevelInitPostEntity()
 
 	// We only do this once per server run cycle
 	if ( engine->IsDedicatedServer() && !g_pVersionWebRequest )
-		g_pVersionWebRequest = new CGEWebRequest( GES_VERSION_URL, OnVersionLoad );
+		g_pVersionWebRequest = new CGEWebRequest( GES_VERSION_URL ); // result handled in Think() (main thread)
 
 	BaseClass::LevelInitPostEntity();
 }

@@ -98,6 +98,11 @@ private:
 	int		m_nCurrSongIdx;
 	bool	m_bNewPlaylist;
 
+	// Playlist parsed on the main thread (KeyValues/filesystem aren't thread safe),
+	// handed to the music thread through m_PendingSongs under m_Lock
+	struct PendingSong_t { char scape[64]; char file[64]; };
+	CUtlVector<PendingSong_t> m_PendingSongs;
+
 	// Playlist seperated by soundscape name
 	CUtlDict<CUtlVector<char*>*, int>	m_Playlists;
 	CUtlVector<char*>* m_CurrPlaylist;
