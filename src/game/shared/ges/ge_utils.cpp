@@ -20,6 +20,13 @@
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
+#ifdef POSIX
+#include <dirent.h>
+#include <fnmatch.h>
+#include <strings.h>
+#endif
+#include "utlstring.h"
+
 #include "tier0/memdbgon.h"
 
 #define GES_ENABLE_MEMDEBUG 0
@@ -1089,3 +1096,106 @@ bool GEUTIL_CleanupNameEnding( const char* pName, char* pOutputName )
 }
 #endif
 
+
+
+#ifdef POSIX
+// Resolve each component of pszRel under pszBase case-insensitively; returns false if not found.
+static bool GEUTIL_ResolveDirNoCase( const char *pszBase, const char *pszRel, char *pszOut, int outLen )
+{
+	Q_strncpy( pszOut, pszBase, outLen );
+	char rel[MAX_PATH];
+	Q_strncpy( rel, pszRel, sizeof( rel ) );
+	for ( char *p = rel; *p; ++p )
+		if ( *p == '\\' ) *p = '/';
+
+	char *save = NULL;
+	for ( char *tok = strtok_r( rel, "/", &save ); tok; tok = strtok_r( NULL, "/", &save ) )
+	{
+		DIR *dir = opendir( pszOut );
+		if ( !dir )
+			return false;
+		bool bFound = false;
+		while ( struct dirent *ent = readdir( dir ) )
+		{
+			if ( !strcasecmp( ent->d_name, tok ) )
+			{
+				Q_strncat( pszOut, "/", outLen );
+				Q_strncat( pszOut, ent->d_name, outLen );
+				bFound = true;
+				break;
+			}
+		}
+		closedir( dir );
+		if ( !bFound )
+			return false;
+	}
+	return true;
+}
+#endif
+
+int GEUTIL_FindFiles( const char *pszWildcard, const char *pszPathID, CUtlVector<CUtlString> &files )
+{
+	files.RemoveAll();
+
+	FileFindHandle_t finder;
+	const char *pszFile = filesystem->FindFirstEx( pszWildcard, pszPathID, &finder );
+	while ( pszFile )
+	{
+		if ( !filesystem->FindIsDirectory( finder ) )
+			files.AddToTail( pszFile );
+		pszFile = filesystem->FindNext( finder );
+	}
+	filesystem->FindClose( finder );
+
+#ifdef POSIX
+	if ( files.Count() == 0 )
+	{
+		// Split "dir/pattern"
+		char dir[MAX_PATH], pattern[MAX_PATH];
+		Q_strncpy( dir, pszWildcard, sizeof( dir ) );
+		for ( char *p = dir; *p; ++p )
+			if ( *p == '\\' ) *p = '/';
+		char *slash = strrchr( dir, '/' );
+		if ( slash )
+		{
+			Q_strncpy( pattern, slash + 1, sizeof( pattern ) );
+			*slash = '\0';
+		}
+		else
+		{
+			Q_strncpy( pattern, dir, sizeof( pattern ) );
+			dir[0] = '\0';
+		}
+
+		char searchPaths[4096];
+		filesystem->GetSearchPath( pszPathID, false, searchPaths, sizeof( searchPaths ) );
+		char *save = NULL;
+		for ( char *base = strtok_r( searchPaths, ";", &save ); base; base = strtok_r( NULL, ";", &save ) )
+		{
+			char full[MAX_PATH];
+			int len = Q_strlen( base );
+			if ( len && ( base[len-1] == '/' || base[len-1] == '\\' ) )
+				base[len-1] = '\0';
+			if ( !GEUTIL_ResolveDirNoCase( base, dir, full, sizeof( full ) ) )
+				continue;
+
+			DIR *d = opendir( full );
+			if ( !d )
+				continue;
+			while ( struct dirent *ent = readdir( d ) )
+			{
+				if ( ent->d_name[0] == '.' || fnmatch( pattern, ent->d_name, FNM_CASEFOLD ) != 0 )
+					continue;
+				bool bDupe = false;
+				for ( int i = 0; i < files.Count() && !bDupe; i++ )
+					bDupe = !Q_stricmp( files[i].Get(), ent->d_name );
+				if ( !bDupe )
+					files.AddToTail( ent->d_name );
+			}
+			closedir( d );
+		}
+	}
+#endif
+
+	return files.Count();
+}

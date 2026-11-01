@@ -19,6 +19,7 @@
 #include "script_parser.h"
 #include "ge_shareddefs.h"
 #include "ge_utils.h"
+#include "utlstring.h"
 
 #define RANDOM_VALUE	"_random"
 #define COMMAND_MAP		"resource/ges_createserver_map.txt"
@@ -349,24 +350,21 @@ void CGECreateServer::PopulateControls( void )
 		// Clear the list first
 		scenariolist->DeleteAllItems();
 
-		FileFindHandle_t findHandle; // note: FileFINDHandle
 		char file[32];
 
 		scenariolist->AddItem( "#SERVER_RANDOM_SCENARIO", new KeyValues(RANDOM_VALUE) );
-		const char *pFilename = filesystem->FindFirstEx( PYDIR, "MOD", &findHandle );
-		while ( pFilename )
+		CUtlVector<CUtlString> scenarios;
+		GEUTIL_FindFiles( PYDIR, "MOD", scenarios );
+		for ( int i = 0; i < scenarios.Count(); i++ )
 		{
+			const char *pFilename = scenarios[i].Get();
 			// Add the scenario to the list if not __init__
 			if ( !Q_stristr(pFilename, "__init__") && !Q_stristr(pFilename, "tournamentdm") )
 			{
 				Q_FileBase( pFilename, file, 32 );
 				scenariolist->AddItem( file, new KeyValues(file) );
 			}
-
-			pFilename = filesystem->FindNext( findHandle );
 		}
-
-		filesystem->FindClose( findHandle );
 		scenariolist->SetEditable( false );
 		scenariolist->SetNumberOfEditLines( 10 );
 		scenariolist->GetMenu()->ForceCalculateWidth();

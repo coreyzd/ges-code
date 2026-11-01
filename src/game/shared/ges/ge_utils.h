@@ -83,6 +83,12 @@ void GEUTIL_DelayRemove( CBaseEntity *pEnt, float delay );
 // Get the current version of GES as defined in version.txt
 bool GEUTIL_GetVersion( string_t &text, int &major, int &minor, int &client, int &server );
 
+// Lists the files matching a wildcard (e.g. "python/ges/GamePlay/*.py") in the given search path.
+// Uses the engine filesystem, and on Linux falls back to a case-insensitive directory scan since
+// the SDK 2013 (2025) filesystem doesn't find GE:S's mixed-case folders.
+class CUtlString;
+int GEUTIL_FindFiles( const char *pszWildcard, const char *pszPathID, CUtlVector<CUtlString> &files );
+
 // Calculates the MD5 Sum of the given string (defined in ge_md5util.cpp)
 void GEUTIL_MD5( const char *str, char *out, int out_len );
 

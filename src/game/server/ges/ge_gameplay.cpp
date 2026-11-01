@@ -8,6 +8,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "cbase.h"
+#include "utlstring.h"
 
 #include "ge_shareddefs.h"
 #include "ge_utils.h"
@@ -938,20 +939,18 @@ void CGEBaseGameplayManager::LoadGamePlayList(const char* path)
 	m_vScenarioList.RemoveAll();
 
 	// TODO: This is on a fast-track to deletion. This stuff should be handled in Python...
-	FileFindHandle_t finder;
-	const char *fileName = filesystem->FindFirstEx( path, "MOD", &finder );
-	while ( fileName )
+	CUtlVector<CUtlString> files;
+	GEUTIL_FindFiles( path, "MOD", files );
+	for ( int i = 0; i < files.Count(); i++ )
 	{
+		const char *fileName = files[i].Get();
 		if ( Q_strncmp( fileName, "__", 2 ) )
 		{
 			char *fileNameNoExt = new char[64];
 			Q_StripExtension( fileName, fileNameNoExt, 64 );
 			m_vScenarioList.AddToTail( fileNameNoExt );
 		}
-
-		fileName = filesystem->FindNext( finder );
 	}
-	filesystem->FindClose( finder );
 }
 
 extern ConVar nextlevel;
