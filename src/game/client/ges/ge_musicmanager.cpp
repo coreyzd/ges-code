@@ -256,9 +256,21 @@ void CGEMusicManager::ResumeMusic()
 	}
 }
 
+ConVar ge_music( "ge_music", "1", FCVAR_ARCHIVE, "Enable GE:S background music (takes effect on restart)" );
+
 int CGEMusicManager::Run()
 {
 	m_bRun = true;
+
+	// Wait for the first playlist request (by then config.cfg/autoexec.cfg have run)
+	while ( m_bRun && !m_bLoadPlaylist )
+		Sleep( 50 );
+
+	if ( !ge_music.GetBool() )
+	{
+		DevMsg( "[FMOD] Music disabled (ge_music 0)\n" );
+		return 0;
+	}
 
 #ifdef GE_MUSIC_ENABLED
 	// Crate FMOD system
