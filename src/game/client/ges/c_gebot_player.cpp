@@ -108,7 +108,7 @@ void C_GENPCRagdoll::Interp_Copy( C_BaseAnimatingOverlay *pSourceEntity )
 	}
 }
 
-void C_GENPCRagdoll::ImpactTrace( trace_t *pTrace, int iDamageType, char *pCustomImpactName )
+void C_GENPCRagdoll::ImpactTrace( trace_t *pTrace, int iDamageType, const char *pCustomImpactName )
 {
 	static bool bInTrace = false;
 	if ( bInTrace )
