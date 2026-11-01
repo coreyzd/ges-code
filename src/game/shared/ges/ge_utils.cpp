@@ -1,4 +1,6 @@
 #include "cbase.h"
+#include <vector>
+#include <string>
 #include "mathlib/IceKey.H"
 #include "filesystem.h"
 #include "utlbuffer.h"
@@ -312,13 +314,13 @@ bool GEUTIL_IsValidTokenChar( const char c )
 	return false;
 }
 
-void GEUTIL_Split( std::string s, char delim, CUtlVector<std::string> &elems )
+void GEUTIL_Split( std::string s, char delim, std::vector<std::string> &elems )
 {
 	std::string::size_type pos = s.find( delim );
 	if ( pos == s.npos )
-		elems.AddToTail( s );
+		elems.push_back( s );
 	else
-		elems.AddToTail( s.substr( 0, pos ) );
+		elems.push_back( s.substr( 0, pos ) );
 
 	while ( pos != s.npos )
 	{
@@ -330,10 +332,10 @@ void GEUTIL_Split( std::string s, char delim, CUtlVector<std::string> &elems )
 		
 		if ( next_pos != s.npos )
 			// If we didn't hit the end copy the portion in between
-			elems.AddToTail( s.substr( pos, next_pos-pos ) );
+			elems.push_back( s.substr( pos, next_pos-pos ) );
 		else
 			// This means we hit the end of the string
-			elems.AddToTail( s.substr( pos ) );
+			elems.push_back( s.substr( pos ) );
 
 		// Move forward
 		pos = next_pos;
@@ -418,22 +420,22 @@ void GEUTIL_ParseLocalization( wchar_t *out, int out_len, const char *input )
 	}
 
 	// First parse out our information
-	CUtlVector<std::string> entries;
+	std::vector<std::string> entries; // NOTE: not CUtlVector -- it memcpy-relocates elements, which breaks std::string
 	GEUTIL_Split( input, '\r', entries );
 	// If we don't have entries, then we are done (this should be impossible at this point)
-	if ( !entries.Count() )
+	if ( entries.empty() )
 		return;
 
 	// Convert the base and remove it as a token
 	wchar_t *found = g_pVGuiLocalize->Find( entries[0].c_str() );
-	entries.Remove( 0 );
+	entries.erase( entries.begin() );
 
-	if ( found && entries.Count() )
+	if ( found && !entries.empty() )
 	{
 		std::wstring finalstr( found );
 		std::wstring wcstoken;
 
-		int tkn_count =  (entries.Count() < max_tkn_count) ? entries.Count() : max_tkn_count;
+		int tkn_count =  ((int)entries.size() < max_tkn_count) ? (int)entries.size() : max_tkn_count;
 		for ( int i=0; i < tkn_count; i++ )
 		{
 			// Resolve our token entry, NOTE: the copy to std::string prevents a crash
@@ -459,11 +461,13 @@ void GEUTIL_ParseLocalization( wchar_t *out, int out_len, const char *input )
 
 		// Finally copy our built string into our output
 		wcsncpy( out, finalstr.c_str(), out_len );
+		out[out_len-1] = L'\0';
 	}
 	else if ( found )
 	{
 		// We don't have any tokens, copy the localized text to the output
 		wcsncpy( out, found, out_len );
+		out[out_len-1] = L'\0';
 	}
 
 	// Finally parse out key bindings
